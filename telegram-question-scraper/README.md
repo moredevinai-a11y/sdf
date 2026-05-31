@@ -47,9 +47,9 @@ API_HASH=your_api_hash
 
 ## Authentication
 
-The login session is already saved in `kasr_session.session` (logged in as
-**Dr. Noody / +201004577161**), so no re-login is needed. To authenticate a
-different account, delete the session file and run:
+If a login session has already been saved in `kasr_session.session` (kept out
+of git), no re-login is needed. To authenticate an account for the first time,
+or to switch accounts, delete the session file and run:
 
 ```bash
 .venv/bin/python scraper.py --login-only
