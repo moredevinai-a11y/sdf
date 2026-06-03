@@ -12,6 +12,9 @@ Originally built for the medical channels `data_KA198` / `KASR_198`, but it work
 on **any channel or group** your logged-in account can access — just pass the
 URL/handle on the command line.
 
+> **New to Python/GitHub?** See [`USER_GUIDE.md`](USER_GUIDE.md) for a plain,
+> step-by-step beginner walkthrough (install → log in → download).
+
 ## Layout
 
 ```
