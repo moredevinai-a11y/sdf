@@ -3,3 +3,4 @@ kasr_session*
 .venv/
 downloads/
 *.db
+__pycache__/
