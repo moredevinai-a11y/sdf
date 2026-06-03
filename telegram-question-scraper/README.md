@@ -16,7 +16,8 @@ URL/handle on the command line.
 
 ```
 kasr_scraper/
-├── scraper.py          # main entry point (CLI)
+├── scraper.py          # main entry point: walk a whole channel/group history
+├── scrape_index.py     # scrape one "index" message that links out to files
 ├── filters.py          # all keyword/filter/categorization rules (tune here)
 ├── inspect_channel.py  # dry diagnostic: print classify decisions for N messages
 ├── requirements.txt    # pinned deps
@@ -47,9 +48,9 @@ API_HASH=your_api_hash
 
 ## Authentication
 
-The login session is already saved in `kasr_session.session` (logged in as
-**Dr. Noody / +201004577161**), so no re-login is needed. To authenticate a
-different account, delete the session file and run:
+If a login session has already been saved in `kasr_session.session` (kept out of
+git), no re-login is needed. To authenticate an account for the first time, or to
+switch accounts, delete the session file and run:
 
 ```bash
 .venv/bin/python scraper.py --login-only
@@ -75,6 +76,42 @@ It prompts for phone → login code → 2FA password (if set) at the terminal.
 # Inspect raw classify decisions for the latest N messages of a channel:
 .venv/bin/python inspect_channel.py https://t.me/some_channel 300
 ```
+
+### Scraping a single "index" message that links out to files
+
+Some channels post an **index / table-of-contents message** for a topic: a single
+message whose body is a list of `https://t.me/<channel>/<msg_id>` links pointing
+at the actual files (often in *other* channels). `scrape_index.py` resolves such
+a message end-to-end:
+
+```bash
+.venv/bin/python scrape_index.py \
+    --index-url https://t.me/FUTUREDOCTORS_198/2254 \
+    --module INT-208
+```
+
+What it does:
+
+- Reads every `t.me/<channel>/<id>` link in the index message.
+- For a link that points **directly at a file**, downloads that file (plus its
+  album siblings if it is part of a grouped media album).
+- For a link that points at a **section header** (a text-only message), it walks
+  forward and downloads the file(s) that follow it, stopping at the next header.
+- Skips practical/oral/spotting, textbooks/notes, and admin/announcement noise
+  via `filters.py`, then **forces** the module code you pass with `--module`
+  (the index itself vouches that every file belongs to that module).
+- De-duplicates identical files by MD5, records everything in `questions.db`,
+  and writes a `MANIFEST.txt` listing each file with its Telegram link.
+- Reports skipped files and dead/broken links so you can review them.
+
+Options: `--index-url` (required), `--module CODE` (required, e.g. `NEU-205`),
+`--slug NAME` (optional download subfolder name; defaults to `M<digits>_<channel>`).
+Downloads land in `downloads/<slug>/<MODULE>/questions/`.
+
+Note: filters are tuned for precision, so an occasional real question file can be
+over-skipped when its caption coincidentally contains an excluded word (e.g. a
+topic literally named "oral cavity" tripping the oral-exam filter). Review the
+`skip(...)` lines it prints and re-fetch any false skip by message id.
 
 Long runs are best backgrounded:
 
