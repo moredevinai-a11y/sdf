@@ -94,7 +94,7 @@ EXCLUDE_FORBIDDEN = [
 MODULES = [
     ("NEU-205", ["neu"], ["205"]),
     ("DIG-206", ["dig"], ["206"]),
-    ("END-207", ["end"], ["207"]),
+    ("END-207", ["endo", "endocrine"], ["207"]),
     ("INT-208", ["int"], ["208"]),
     ("PSY-213", ["psy"], ["213"]),
     ("PAT-210", ["pat"], ["210"]),
@@ -164,13 +164,20 @@ def matches_non_question(text: str) -> str | None:
 
 
 def detect_module(text: str) -> str:
-    """Return the module code for the given (already normalized) text."""
-    for code, shortcodes, numbers in MODULES:
-        for sc in shortcodes:
-            if re.search(r"\b" + re.escape(sc) + r"\b", text):
-                return code
+    """Return the module code for the given (already normalized) text.
+
+    Explicit module numbers (205, 206, ...) are unambiguous, so they are
+    checked first across all modules (in priority order). The short alpha
+    codes are only a fallback because they can collide with common words
+    (e.g. an over-broad "end" would match "end of module").
+    """
+    for code, _shortcodes, numbers in MODULES:
         for num in numbers:
             if re.search(r"\b" + re.escape(num) + r"\b", text):
+                return code
+    for code, shortcodes, _numbers in MODULES:
+        for sc in shortcodes:
+            if re.search(r"\b" + re.escape(sc) + r"\b", text):
                 return code
     return UNCATEGORIZED
 
