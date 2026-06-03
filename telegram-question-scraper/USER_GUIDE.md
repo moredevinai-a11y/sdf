@@ -174,6 +174,62 @@ To open the folder quickly:
 
 ---
 
+## Group vs Message link — which one do I use?
+
+There are two situations. Pick the one that matches what you have.
+
+### A) Scrape a whole GROUP or CHANNEL
+
+Use this when you want **everything** from an entire group/channel.
+
+1. **Get the link:** in Telegram, open the group/channel → tap its name at the
+   top → you'll see a link like `https://t.me/SomeGroup` (or an `@SomeGroup`
+   handle). You must already be a member.
+2. **Run it** (Windows users: swap `.venv/bin/python` for `.venv\Scripts\python`):
+   ```
+   .venv/bin/python scraper.py https://t.me/SomeGroup
+   ```
+   It reads every message in that group, keeps the question/exam files, skips
+   practical/textbook/noise, and saves them into `downloads`.
+
+Optional extras:
+```
+.venv/bin/python scraper.py --dry-run https://t.me/SomeGroup            # preview only, downloads nothing
+.venv/bin/python scraper.py --limit 400 --dry-run https://t.me/SomeGroup # test on the latest 400 messages
+.venv/bin/python scraper.py https://t.me/GroupA https://t.me/GroupB      # several at once
+```
+
+### B) Scrape from a single MESSAGE LINK
+
+Use this when **one message** contains a list of links to the actual files
+(often files that live in other channels) — this is exactly what was used to get
+modules 205–210.
+
+1. **Copy the message link:** in Telegram, tap/right-click that specific message
+   → **"Copy Message Link"**. You get something like
+   `https://t.me/FUTUREDOCTORS_198/2254` (channel name + message number).
+2. **Run it** (Windows users: swap `.venv/bin/python` for `.venv\Scripts\python`):
+   ```
+   .venv/bin/python scrape_index.py --index-url https://t.me/FUTUREDOCTORS_198/2254 --module NEU-205
+   ```
+   - Replace the link with the one you copied.
+   - Replace `NEU-205` with any label you want stamped on the files.
+
+   It opens that one message, follows every link inside it, downloads the files
+   (handling photo albums and "header → files below it" sections), removes
+   duplicates, and writes a `MANIFEST.txt` listing each file with its link.
+
+### Quick comparison
+
+| You have… | Use | Command |
+|---|---|---|
+| A whole group/channel | `scraper.py` | `scraper.py https://t.me/SomeGroup` |
+| One message full of links | `scrape_index.py` | `scrape_index.py --index-url https://t.me/CHANNEL/MSGID --module LABEL` |
+
+Either way, results land in `downloads/.../questions/` with a `MANIFEST.txt`.
+
+---
+
 ## If something goes wrong
 
 - **"python is not recognized" (Windows)** → Python wasn't added to PATH.
